@@ -1,9 +1,11 @@
 const bodyParser = require("../utils/body-parser")
 const crypto = require("crypto");
+var mongodb = require('mongodb');
+const { connectConfig, Movie } = require("../db/connection");
 
-const regexV4 = new RegExp(/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/);
+const regexV4 = new RegExp(/^[0-9a-fA-F]{24}$/);
 
-function getReq(req, res) {
+async function getReq(req, res) {
     url = req.url.substring(0, req.url.lastIndexOf("/"));
     const id = req.url.substring(req.url.lastIndexOf("/") + 1);
     console.log(id);
@@ -22,40 +24,49 @@ function getReq(req, res) {
 
             res.end();
         } else {
-            const filterData = req.movies.filter((movie) => {
-                if (movie.id === id) {
-                    return movie;
-                }
-            })
-
-            if (filterData.length > 0) {
+            const filterData = await Movie.findById(id);
+            if (filterData) {
                 res.statusCode = 200;
-                res.write(JSON.stringify({ "movies": filterData[0] }));
+                res.write(JSON.stringify({ "movies": filterData}));
+                res.end();
             }
             else {
                 res.statusCode = 404;
                 res.write(JSON.stringify({ title: "Not found", mesage: "Movie not found!" }));
+                res.end();
             }
         }
     }
     else if (req.url == "/url/movies") {
         res.statusCode = 200;
-        res.write(JSON.stringify({ "movies": req.movies }));
+        res.setHeader('Content-Type', 'application/json');
+        Movie.find({})
+            .then(data => {
+                const response = {
+                    movies: data.length > 0 ? data : "[]"
+                };
+                res.end(JSON.stringify(response));
+            })
+            .catch(error => {
+                console.error(error);
+                res.status(500).end(JSON.stringify({ error: 'Internal Server Error' }));
+            });
     }
     else {
         res.statusCode = 404;
         res.write(
             JSON.stringify({ title: "Not found", message: "Route not found!" })
         );
+        res.end();
     }
-    res.end();
 }
 
 async function postReq(req, res) {
     try {
         let body = await bodyParser(req);
-        body.id = crypto.randomUUID();
-        req.movies.push(body);
+        console.log(body);
+        const result = await Movie.create(body);
+        console.log(result);
         res.writeHead(201, { "Content-Type": "Application/json" });
         res.end();
 
@@ -84,11 +95,11 @@ async function putReq(req, res) {
                 res.writeHead(201, { "Content-Type": "Application/json" });
                 res.end();
             }
-            else{
+            else {
                 throw new Error;
             }
         }
-        else{
+        else {
             res.statusCode = 404;
             res.write(
                 JSON.stringify({ title: "Not found", message: "Route not found!" })
@@ -110,7 +121,7 @@ async function putReq(req, res) {
 }
 
 
-function deleteReq(req, res) {
+async function deleteReq(req, res) {
     url = req.url.substring(0, req.url.lastIndexOf("/"));
     const id = req.url.substring(req.url.lastIndexOf("/") + 1);
 
@@ -128,12 +139,9 @@ function deleteReq(req, res) {
         res.end();
     }
     else if (url == "/url/movies" && id !== null) {
-        const index = req.movies.findIndex((movie) => movie.id === id);
-        console.log(index);
-
-        const filterData = req.movies.filter((movie) => movie.id !== id);
-        req.movies.splice(index, 1);
-        console.log(req.movies);
+        console.log(id);
+        const result = await Movie.deleteOne({_id: new mongodb.ObjectId(id)});
+        console.log(result);
         res.statusCode = 200;
         res.write(JSON.stringify({ title: "Successfull", mesage: "Movie has been removed!" }));
         res.end();

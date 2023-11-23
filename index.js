@@ -1,9 +1,12 @@
 const http = require("http");
 const env = require("dotenv").config();
+const {connectConfig, Movie} = require("./db/connection");
 const {getReq, postReq, putReq, deleteReq} = require("./controller/controller");
 const movies = require("./data/movie.json");
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000 || process.env.PORT;
+
+connectConfig();
 
 const app = http.createServer((req, res) => {
     req.movies = movies;
