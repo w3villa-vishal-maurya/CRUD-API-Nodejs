@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const connectConfig = ()=>{
     mongoose.connect(process.env.CONFIG_URL)
     .then((e)=>{
-        console.log("Connect to DB.");
+        console.log(`Connect to mongoDb: ${e.connection.host}`);
     })
     .catch((e)=>{
         res.send(e);
@@ -31,7 +31,26 @@ const movieSchema = new mongoose.Schema({
 
 const Movie = mongoose.model("movie", movieSchema);
 
+const userSchema = new mongoose.Schema({
+    username:{
+        type: String,
+        required: true, 
+    },
+    email:{
+        type: String,
+        required: true,
+        unique: true,
+    },
+    password: {
+        type: String,
+        required: true
+    }
+}, {timestamps: true});
+
+const User = mongoose.model("user", userSchema);
+
 module.exports = {
     connectConfig,
-    Movie
+    Movie,
+    User
 }
