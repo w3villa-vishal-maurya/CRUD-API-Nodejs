@@ -1,4 +1,3 @@
-const bodyParser = require("../utils/body-parser")
 const crypto = require("crypto");
 var mongodb = require('mongodb');
 const { connectConfig, Movie } = require("../db/connection");

@@ -23,6 +23,11 @@ route.post("/register", async (req, res) => {
 
 route.get("/url/*", getReq);
 
+route.post("/addmovie", postReq);
+
+route.put("/update/:id", putReq);
+
+route.delete("/delete/:id", deleteReq);
 
 
 module.exports = route;
