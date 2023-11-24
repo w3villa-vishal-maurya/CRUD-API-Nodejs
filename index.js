@@ -1,7 +1,9 @@
 const http = require("http");
 const env = require("dotenv").config();
 const express = require("express");
-const { connectConfig, Movie, User } = require("./db/connection");
+const { connectConfig} = require("./db/connection");
+const Movie = require("./model/movie");
+const User = require("./model/user");
 const auth_user = require("./router/authRoutes");
 const public_users = require("./router/general");
 const jwt = require("jsonwebtoken");

@@ -1,7 +1,8 @@
 const bodyParser = require("../utils/body-parser")
 const crypto = require("crypto");
 var mongodb = require('mongodb');
-const { connectConfig, Movie } = require("../db/connection");
+const Movie = require("../model/movie");
+const User = require("../model/user");
 
 const regexV4 = new RegExp(/^[0-9a-fA-F]{24}$/);
 
